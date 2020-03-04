@@ -1,0 +1,80 @@
+package com.mashibin.spring.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mashibin.spring.entity.Account;
+import com.mashibin.spring.service.AccountService;
+
+@Controller
+@RequestMapping("/account")
+public class AccountController {
+	
+	@Autowired
+	AccountService accountSrv;
+	
+	@RequestMapping("/login")
+	public String login()
+	{
+		return "account/login";
+	}
+	
+	
+	@RequestMapping("/validataAccount")
+	@ResponseBody
+	public String validataAccount(String loginName,String password,HttpServletRequest request)
+	{
+		System.out.println("loginName = "+loginName);
+		System.out.println("password = "+password);
+
+		Account account = accountSrv.findAccountByLoginNameAndPassword(loginName,password);
+		
+		if(null == account)
+		{
+			System.out.println("login failed");
+			return "login failed";
+		}else
+		{
+			request.getSession().setAttribute("account", account);
+			System.out.println("login success");
+			return "success";
+		}
+	}
+	
+	@RequestMapping("/logOut")
+	public String logOut(HttpServletRequest request)
+	{
+		System.out.println("移除accont。。。。");
+		request.getSession().removeAttribute("account");
+		return "/index";
+	}
+	@RequestMapping("/list")
+	public String pageList(@RequestParam(required=false,defaultValue="1") Integer pageNum, @RequestParam(required=false,defaultValue="5") Integer pageSize,Model map)
+	{
+		System.out.println("pageList");
+		System.out.println(" page ");
+		System.out.println("pageNum="+pageNum);
+		System.out.println("pageSize="+pageSize);  
+		List<Account> accountList = accountSrv.getAccountListByPage(pageNum,pageSize);
+		map.addAttribute("accountList", accountList);
+		System.out.println("accountList.size="+accountList.size());
+		return "account/list";
+	}
+	@RequestMapping("/register")
+	public String register(Account account,Model map)
+	{
+		boolean registerFlg = accountSrv.save(account);
+		map.addAttribute("registerFlg", registerFlg);
+		return "/index";
+	}
+	
+	
+}
