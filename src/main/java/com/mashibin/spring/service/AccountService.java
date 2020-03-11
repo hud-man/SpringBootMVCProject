@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.mashibin.spring.RespStatus;
 import com.mashibin.spring.entity.Account;
 import com.mashibin.spring.mapper.AccountExample;
 import com.mashibin.spring.mapper.AccountMapper;
@@ -35,13 +37,14 @@ public class AccountService {
 	}
 
 
-	public List<Account> getAccountListByPage(Integer pageNum, Integer pageSize) {
+	public PageInfo<Account> getAccountListByPage(Integer pageNum, Integer pageSize) {
 		
 		System.out.println("service pageNum="+pageNum);
 		System.out.println("service pageSize="+pageSize);
 		PageHelper.startPage(pageNum, pageSize);
 		AccountExample example = new AccountExample();
-		return accountMapper.selectByExample(example);
+		List<Account> accountList = accountMapper.selectByExample(example);
+		return new PageInfo<Account>(accountList,5);
 	}
 
 
@@ -60,6 +63,20 @@ public class AccountService {
 		MessageDigest md5 = MessageDigest.getInstance("MD5");
 		byte[] md5Arr = md5.digest(password.getBytes());
 		return Base64.getEncoder().encodeToString(md5Arr);
+	}
+
+
+	public RespStatus deleteById(int id) {
+
+		int key = accountMapper.deleteByPrimaryKey(id);
+		if(key>0)
+		{
+			return new RespStatus(200,"","");
+		}else
+		{
+			return new RespStatus(400,"","");
+		}
+		
 	}
 
 }

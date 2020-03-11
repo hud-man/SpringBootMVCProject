@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
 <meta charset="UTF-8">
 <title>办公系统</title>
@@ -90,8 +89,9 @@
   	<th>年龄</th>
   	<th>地址</th>
   	<th>角色</th>
+  	<th>操作</th>
   </tr>
-  <tr th:each="account:${accountList}">
+  <tr th:each="account:${page.list}">
   	<td th:text="${accountStat.count}"></td>
   	<td th:text="${account.id}"></td>
   	<td th:text="${account.loginName}"></td>
@@ -99,31 +99,60 @@
   	<td th:text="${account.age}"></td>
   	<td th:text="${account.location}"></td>
   	<td th:text="${account.role}"></td>
+  	<td>
+  	<a class="btn btn-danger" th:href="@{'javascript:deleteById('+${account.id}+');'}">删除</a>
+  	<a class="btn btn-info" th:href="@{'javascript:void(0)'}">修改密码</a>
+  	</td>
   </tr>
 </table>
 <!-- 巨幕 end -->
-
+<p>[[${page}]]</p>
 <!-- pageSize start -->
 <nav aria-label="Page navigation">
   <ul class="pagination">
-    <li>
-      <a href="#" aria-label="Previous">
+    <li th:class="${page.hasPreviousPage}?'':'disabled'">
+      <a th:href="@{${page.hasPreviousPage} ?'/account/list?pageNum='+${page.prePage}: 'javascript:void(0)'}" aria-label="Previous">
         <span aria-hidden="true">&laquo;</span>
       </a>
     </li>
-    <li><a th:href="@{/account/list?pageNum=1&pageSize=5}">1</a></li>
-    <li><a th:href="@{/account/list?pageNum=2&pageSize=5}">2</a></li>
-    <li><a th:href="@{/account/list?pageNum=3&pageSize=5}">3</a></li>
-    <li><a th:href="@{/account/list?pageNum=4&pageSize=5}">4</a></li>
-    <li><a th:href="@{/account/list?pageNum=5&pageSize=5}">5</a></li>
-    <li>
-      <a href="#" aria-label="Next">
+    <!-- 
+     <option th:each="city : ${list}" th:text="${city.name}" th:selected="${cityName} eq ${city.name}">Peking</option>
+     -->
+    
+    <li th:each="pageN:${page.navigatepageNums}"><a th:href="@{'/account/list?pageNum='+${pageN}}">[[${pageN}]]</a></li>
+
+    <li th:class="${page.hasNextPage}?'':'disabled'">
+      <a th:href="@{${page.hasNextPage} ? '/account/list?pageNum='+${page.nextPage}:'javascript:void(0)'}" aria-label="Next">
         <span aria-hidden="true">&raquo;</span>
       </a>
     </li>
   </ul>
 </nav>
-
+<script type="text/javascript">
+	function deleteById(id)
+	{
+		console.log("id="+id);
+		var del = confirm("确定要删除么");
+		if(del==false)
+		{
+			return;			
+		}
+		var url = "/account/deleteById";
+		var args={id:id};
+		$.post(url,args,function(data){
+			console.log("data="+data);
+			if(data.code==200)
+			{
+				//刷新页面
+				window.location.reload();
+			}
+			else
+			{
+				alert("删除失败:"+data.msg);
+			}
+		});
+	}
+</script>
 <!-- pageSize end -->
 </body>
 </html>
